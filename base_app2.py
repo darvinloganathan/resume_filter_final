@@ -153,14 +153,14 @@ def download(filename):
     return send_from_directory(directory=uploads, filename=filename)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'darvinloganathan1@gmail.com'
-app.config['MAIL_PASSWORD'] = 'Dare@2247'
+app.config['MAIL_USERNAME'] = '*********@gmail.com'
+app.config['MAIL_PASSWORD'] = '*******'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 @app.route('/send_mail/<path:mail_id>', methods=['GET', 'POST'])
 def send_mail(mail_id):
-    msg = Message('interview invite', sender = 'darvinloganathan1@gmail.com', recipients = [mail_id])
+    msg = Message('interview invite', sender = 'dar*******han1@gmail.com', recipients = [mail_id])
     msg.body = "you are selected for 1st level of interview discussion"
     mail.send(msg)
     return "mail has been send"
