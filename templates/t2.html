@@ -1,0 +1,58 @@
+<div style="float: left;margin-right:10px">
+  <table>
+     <tr>
+        {% for col in column_names %}
+        <th>{{col}}</th>
+        {% endfor %}      
+    </tr>
+    {% for row in row_data %}
+    
+    <tr>
+        {% for col, row_ in zip(column_names, row) %}
+                
+        <td>{{row_}}</td>
+        
+        {% endfor %}
+        {% endfor %}
+          </tr>
+  </table>
+</div>
+<div style="float: left">
+  <table>
+     <th> Resume</th>
+     {% for base in item %}
+         
+          <tr>
+         
+            <td>
+           
+            <a href="{{ url_for('download', filename=base) }}">pdf</a>  
+             
+            </td>
+             
+            </tr>
+        
+         {% endfor %}
+       
+  </table>
+</div>
+<div style="float: left">
+  <table>
+     <th> Email </th>
+     {% for m in mail %}
+         
+          <tr>
+         
+            <td>
+           
+            <a href="{{ url_for('send_mail',mail_id=m) }}">invite</a> 
+             
+            </td>
+             
+            </tr>
+        
+         {% endfor %}
+       
+  </table>
+</div>
+
