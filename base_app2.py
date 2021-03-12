@@ -15,15 +15,25 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 from spacy.matcher import PhraseMatcher
 import re
+import docx2txt
 def pdfextract(file):
     text = extract_text(file)
     return text
-
+def wordextract(file):
+    text=docx2txt.process(file)
+    return text
+def text_extract(file):
+    filename,file_extension=os.path.splitext(file)
+    if file_extension=='.pdf':
+        text=pdfextract(file)
+    else:
+        text=wordextract(file)
+    return text
 email=[]
 
 def create_profile(file):
     #text cleaning
-    text = pdfextract(file) 
+    text = text_extract(file) 
     text = str(text)
     text = text.replace("\\n", "")
     text = text.lower()
@@ -36,6 +46,7 @@ def create_profile(file):
     R_words = [nlp(text) for text in keyword_dict['R Language'].dropna(axis = 0)]
     python_words = [nlp(text) for text in keyword_dict['Python Language'].dropna(axis = 0)]
     Data_Engineering_words = [nlp(text) for text in keyword_dict['Data Engineering'].dropna(axis = 0)]
+    no_skill_words=[nlp(text) for text in keyword_dict['no skill'].dropna(axis=0)]
     matcher = PhraseMatcher(nlp.vocab)
     matcher.add('Stats', None, *stats_words)
     matcher.add('NLP', None, *NLP_words)
@@ -44,6 +55,7 @@ def create_profile(file):
     matcher.add('R', None, *R_words)
     matcher.add('Python', None, *python_words)
     matcher.add('DE', None, *Data_Engineering_words)
+    matcher.add('NS',None,*no_skill_words)
     doc = nlp(text)
     
     d = []  
@@ -53,7 +65,7 @@ def create_profile(file):
         span = doc[start : end]  # get the matched slice of the doc
         d.append((rule_id, span.text))      
         keywords = "\n".join(f'{i[0]} {i[1]} ({j})' for i,j in Counter(d).items())
-    email.append(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", text))
+    #email.append(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", text))
     ## convertimg string of keywords to dataframe
     df = pd.read_csv(StringIO(keywords),names = ['Keywords_List'])
     df1 = pd.DataFrame(df.Keywords_List.str.split(' ',1).tolist(),columns = ['Subject','Keyword'])
@@ -66,6 +78,12 @@ def create_profile(file):
     
     dataf = pd.concat([name3['Candidate Name'], df3['Subject'], df3['Keyword'], df3['Count']], axis = 1)
     dataf['Candidate Name'].fillna(dataf['Candidate Name'].iloc[0], inplace = True)
+    #email.append(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", text))
+    x=re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", text)
+    if x==[]:
+        email.append('no mail')
+    else:
+        email.append(x)
     return(dataf)
 
 output = []
@@ -89,10 +107,11 @@ DOWNLOAD_FOLDER = os.path.join(path, 'download')
 if not os.path.isdir(UPLOAD_FOLDER):
     os.mkdir(UPLOAD_FOLDER)
 
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 # Allowed extension you can set your own
-ALLOWED_EXTENSIONS = set(['pdf'])
+ALLOWED_EXTENSIONS = set(['pdf','docx'])
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -117,6 +136,9 @@ def upload_file():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    path = 'E:/darvin/project/resume_project2/uploads/'
+    for file in os.listdir(path):
+        os.rename(path + file, path + file.lower())
     #Function to read resumes from the folder one by one
     mypath=UPLOAD_FOLDER #enter your path here where you saved the resumes
     onlyfiles = [os.path.join(mypath, f) for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
@@ -130,9 +152,8 @@ def upload_file():
     final_database2 = final_database['Keyword'].groupby([final_database['Candidate Name'], final_database['Subject']]).count().unstack()
     final_database2.reset_index(inplace = True)
     final_database2.fillna(0,inplace=True)
-    #new_data = final_database2.iloc[:,1:]
-    #new_data.index = final_database2['Candidate Name']
     mail=remove_nestings(email)
+    final_database2=final_database2.drop(['NS'],axis=1)
     final_database2['Score']=final_database2.sum(axis = 1, skipna = True)
     final_database2['mail']=mail
     result=final_database2.sort_values(by='Score',ascending=False)
@@ -153,14 +174,14 @@ def download(filename):
     return send_from_directory(directory=uploads, filename=filename)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = '*********@gmail.com'
-app.config['MAIL_PASSWORD'] = '*******'
+app.config['MAIL_USERNAME'] = 'darv111222222222222444444444@gmail.com'
+app.config['MAIL_PASSWORD'] = 'D**************'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 @app.route('/send_mail/<path:mail_id>', methods=['GET', 'POST'])
 def send_mail(mail_id):
-    msg = Message('interview invite', sender = 'dar*******han1@gmail.com', recipients = [mail_id])
+    msg = Message('interview invite', sender = 'darvfhhhhh1@gmail.com', recipients = [mail_id])
     msg.body = "you are selected for 1st level of interview discussion"
     mail.send(msg)
     return "mail has been send"
