@@ -96,7 +96,19 @@ def remove_nestings(l):
             output.append(i)
     return output
 
-
+def remove_empty_pdf(file):
+    text = text_extract(file)
+    text = str(text)
+    text = text.replace("\n",'')
+    text = text.lower()
+    text=text.strip()
+    if text=='':
+        os.remove(file)
+    return
+def remove_empty_docx(file):
+    if os.stat(file).st_size==0:
+        os.remove(file)
+    return
 app=Flask(__name__)
 # Get current path
 path = os.getcwd()
@@ -109,7 +121,6 @@ if not os.path.isdir(UPLOAD_FOLDER):
 
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 # Allowed extension you can set your own
 ALLOWED_EXTENSIONS = set(['pdf','docx'])
 
@@ -141,14 +152,27 @@ def upload_file():
         os.rename(path + file, path + file.lower())
     #Function to read resumes from the folder one by one
     mypath=UPLOAD_FOLDER #enter your path here where you saved the resumes
+    
     onlyfiles = [os.path.join(mypath, f) for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
     final_database=pd.DataFrame()
     i = 0 
     while i < len(onlyfiles):
         file = onlyfiles[i]
+        remove_empty_docx(file)    
+        i +=1
+    onlyfiles = [os.path.join(mypath, f) for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
+    j=0
+    while j < len(onlyfiles):
+        file = onlyfiles[j]
+        remove_empty_pdf(file)    
+        j +=1
+    onlyfiles= [os.path.join(mypath, f) for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
+    k = 0 
+    while k < len(onlyfiles):
+        file = onlyfiles[k]
         dat= create_profile(file)
         final_database = final_database.append(dat)
-        i +=1
+        k +=1
     final_database2 = final_database['Keyword'].groupby([final_database['Candidate Name'], final_database['Subject']]).count().unstack()
     final_database2.reset_index(inplace = True)
     final_database2.fillna(0,inplace=True)
@@ -164,6 +188,8 @@ def upload_file():
         y.append(result['Candidate Name'][i].split('.'))
     y=pd.DataFrame(y)
     result['Candidate Name']=y[0]
+    email.clear()
+    mail.clear()
     return render_template ("t2.html",
                            column_names=result.columns.values,
                            row_data=list(result.values.tolist()),
@@ -174,17 +200,17 @@ def download(filename):
     return send_from_directory(directory=uploads, filename=filename)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'darv111222222222222444444444@gmail.com'
-app.config['MAIL_PASSWORD'] = 'D**************'
+app.config['MAIL_USERNAME'] = 'dar************1@gmail.com'
+app.config['MAIL_PASSWORD'] = 'Da*****47'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 @app.route('/send_mail/<path:mail_id>', methods=['GET', 'POST'])
 def send_mail(mail_id):
-    msg = Message('interview invite', sender = 'darvfhhhhh1@gmail.com', recipients = [mail_id])
+    msg = Message('interview invite', sender = 'darvinloganathan1@gmail.com', recipients = [mail_id])
     msg.body = "you are selected for 1st level of interview discussion"
     mail.send(msg)
     return "mail has been send"
 
 if __name__ == "__main__":
-    app.run()
+    app.run('0.0.0.0')
