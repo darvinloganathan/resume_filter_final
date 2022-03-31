@@ -223,8 +223,8 @@ def download(filename):
     return send_from_directory(directory=uploads, filename=filename)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'darvinloganathan1@gmail.com'
-app.config['MAIL_PASSWORD'] = 'Dare@2247'
+app.config['MAIL_USERNAME'] = 'darvinlogann1@gmail.com'
+app.config['MAIL_PASSWORD'] = 'Dar247'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
